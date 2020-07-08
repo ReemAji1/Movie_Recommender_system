@@ -2,7 +2,9 @@
 title: "Recommender_System"
 author: "Reem Aji"
 date: "07/07/2020"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 #the folloiwng libraries will be used in this project:
 ```{r libs, warning=FALSE, error=FALSE, message=FALSE}
@@ -132,9 +134,10 @@ image(as.matrix(movie_similarity), main = "Movies similarity")
 rating_values <- as.vector(ratingMatrix@data)
 unique(rating_values) #extracting unique ratings
 
-#now I create a table of ratings to display the most unique ratings
-table_ratings <- table(vector_ratings) # what is the count of each rating value
-table_ratings
+#no I create a table of ratings to display the most unique ratings
+
+Table_of_Ratings <- table(rating_values) # what is the count of each rating value
+Table_of_Ratings
 ```
 #from the table we realize that there are 11 unique score values. The lower values mean lower ratings and vice versa.
 
@@ -155,9 +158,9 @@ qplot(rating_values) +
 #We will first count the number of views in a film and then organize them in a table that would group them in descending order
 
 ```{r top_no, warning=FALSE, error=FALSE, echo=FALSE}
-moview_views <- colCounts(ratingMatrix) #count views for each movie
-table_views <- data.frame(movie = names(moview_views),
-                          views = moview_views) #create dataframe of views
+movie_views <- colCounts(ratingMatrix) #count views for each movie
+table_views <- data.frame(movie = names(movie_views),
+                          views = movie_views) #create dataframe of views
 table_views <- table_views[order(table_views$views, 
                                  decreasing = TRUE), ] # sort by number of views
 table_views$title <- NA
@@ -184,7 +187,7 @@ average_ratings <- colMeans(ratingMatrix)
 qplot(average_ratings) + 
   stat_bin(binwidth = 0.1) +
   ggtitle("Distribution of the average movie rating")
-average_ratings_relevant <- average_ratings[views_per_movie > 50] 
+average_ratings_relevant <- average_ratings[movie_views > 50] 
 qplot(average_ratings_relevant) + 
   stat_bin(binwidth = 0.1) +
   ggtitle(paste("Distribution of the relevant average ratings"))
@@ -209,7 +212,7 @@ print("Minimum number of movies per user:")
 min_n_movies
 print("Minimum number of users per movie:")
 min_n_users
-image(ratingmat[rowCounts(ratingMatrix) > min_n_movies,
+image(ratingMatrix[rowCounts(ratingMatrix) > min_n_movies,
                  colCounts(ratingMatrix) > min_n_users], 
 main = "Heatmap of the top users and movies")
 ```
@@ -363,3 +366,5 @@ head(table_top)
 
 #Conclusion
 ##IBCF recommends items on the basis of the similarity matrix. It’s an eager-learning model, once built, it doesn’t need to access the initial data.In addition, this algorithm is efficient and scalable, so it works well with big rating matrices.
+
+
