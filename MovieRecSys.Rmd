@@ -1,12 +1,9 @@
 ---
-title: "Recommender_System"
+title: "Building a Movie Recommendation System"
 author: "Reem Aji"
 date: "07/07/2020"
-output:
-  html_document: default
-  pdf_document: default
 ---
-#the folloiwng libraries will be used in this project:
+The folloiwng libraries will be used in this project:
 ```{r libs, warning=FALSE, error=FALSE, message=FALSE}
 library(recommenderlab)
 library(ggplot2)
@@ -14,31 +11,33 @@ library(data.table)
 library(reshape2)
 ```
 
-#Retrieving the Data
+Retrieving the Data
 
 ```{r data_load, warning=FALSE, error=FALSE, echo=FALSE}
 movies <- read.csv("/Users/reemaji/Downloads/IMDB-Dataset/movies.csv")
 ratings <- read.csv("/Users/reemaji/Downloads/IMDB-Dataset/ratings.csv")
 ```
 
-#Summary and head for movies
+Summary and head for movies
 
 ```{r mov_summ, warning=FALSE, error=FALSE, echo=FALSE}
-summary(ratings)
-head(ratings)
+summary(movies)
+head(movies)
 ```
 
-#Summary and head for ratings:
+Summary and head for ratings:
 ```{r rat_summ, warning=FALSE, error=FALSE, echo=FALSE}
 summary(ratings)
 head(ratings)
 ```
 
-#We observed that the userId column, as well as the movieId column, consist of integers.I will deal with this in the next step
+We observed that the userId column, as well as the movieId column, consist of integers. I will deal with this in the next step.
 
-#Data Pre-processing
-#Extract a list of genres
-#We need to convert the genres present in the movie_data dataframe into a more usable format by the users. In order to do so, we will first create a one-hot encoding to create a matrix that comprises of corresponding genres for each of the films.
+Data Pre-processing
+
+Extract a list of genres
+
+We need to convert the genres present in the movie_data dataframe into a more usable format by the users. In order to do so, we will first create a one-hot encoding to create a matrix that comprises of corresponding genres for each of the films.
 
 ```{r data_genres, warning=FALSE, error=FALSE, echo=FALSE}
 genres <- as.data.frame(movies$genres, stringsAsFactors=FALSE)
@@ -68,16 +67,16 @@ for (c in 1:ncol(genre_matrix2)) {
 head(genre_matrix2)
 ```
 
-##Create a search matrix to search for a movie by genre
+Create a search matrix to search for a movie by genre
 
 ```{r search_genres, warning=FALSE, error=FALSE, echo=FALSE}
 search_matrix <- cbind(movies[,1:2], genre_matrix2)
 head(search_matrix)
 ```
-#We realize that each movie can correspond to either one or more than one genre.For example, Toy Story, which is an animated film also falls under the genres of Comedy, Fantasy, and Children.
+We realize that each movie can correspond to either one or more than one genre.For example, Toy Story, which is an animated film also falls under the genres of Comedy, Fantasy, and Children.
 
-###Converting ratings matrix in a proper format
-#In order to use the ratings data for building a recommendation engine with recommenderlab, I convert rating matrix into a sparse matrix of type realRatingMatrix.
+Converting ratings matrix in a proper format
+In order to use the ratings data for building a recommendation engine with recommenderlab, I convert rating matrix into a sparse matrix of type realRatingMatrix.
 
 ```{r rat_mat, warning=FALSE, error=FALSE, echo=FALSE}
 #Create ratings matrix. Rows = userId, Columns = movieId
@@ -88,9 +87,9 @@ ratingMatrix <- as(ratingMatrix, "realRatingMatrix")
 ratingMatrix
 ```
 
-## Exploring Parameters of Recommendation Models
+Exploring Parameters of Recommendation Models
 
-#The *recommenderlab* package contains some options for the recommendation algorithm:
+The *recommenderlab* package contains some options for the recommendation algorithm:
 
 ```{r rec_overview, warning=FALSE, error=FALSE, echo=FALSE}
 recommender_models <- recommenderRegistry$get_entries(dataType = "realRatingMatrix")
@@ -99,16 +98,17 @@ names(recommender_models)
 lapply(recommender_models, "[[", "description")
 ```
 
-#I will implement a single model in this project – Item Based Collaborative Filtering.Check the parameters of this model.
+I will implement a single model in this project – Item Based Collaborative Filtering.Check the parameters of this model.
 
 ```{r model_param, warning=FALSE, error=FALSE}
 recommender_models$IBCF_realRatingMatrix$parameters
 ```
 
-## Exploring Similarity Data
-#Collaborative Filtering involves suggesting movies to the users that are based on collecting preferences from many other users. For example, if a user A likes to watch action films and so does user B, then the movies that the user B will watch in the future will be recommended to A and vice-versa. Therefore, recommending movies is dependent on creating a relationship of similarity between the two users. With the help of recommenderlab, we can compute similarities using various operators like cosine, pearson as well as jaccard.
+Exploring Similarity Data
 
-#Now, I determine how similar the first four users are with each other by creating and visualizing similarity matrix that uses the cosine distance:
+Collaborative Filtering involves suggesting movies to the users that are based on collecting preferences from many other users. For example, if a user A likes to watch action films and so does user B, then the movies that the user B will watch in the future will be recommended to A and vice-versa. Therefore, recommending movies is dependent on creating a relationship of similarity between the two users. With the help of recommenderlab, we can compute similarities using various operators like cosine, pearson as well as jaccard.
+
+Now, I determine how similar the first four users are with each other by creating and visualizing similarity matrix that uses the cosine distance:
 
 ```{r sim_users, warning=FALSE, error=FALSE, echo=FALSE}
 similarity_users <- similarity(ratingMatrix[1:4, ], 
@@ -117,10 +117,10 @@ similarity_users <- similarity(ratingMatrix[1:4, ],
 as.matrix(similarity_users)
 image(as.matrix(similarity_users), main = "User similarity")
 ```
-#in the givin matrix, each row and column represents a user. We have taken four users and each cell in this matrix represents the similarity that is shared between the two users.
+In the givin matrix, each row and column represents a user. We have taken four users and each cell in this matrix represents the similarity that is shared between the two users.
 
 
-##Using the same approach, I compute similarity between the first four movies.
+Using the same approach, I compute similarity between the first four movies.
 ```{r sim_movies, warning=FALSE, error=FALSE, echo=FALSE}
 movie_similarity <- similarity(ratingMatrix[, 1:4], method =
                                  "cosine", which = "items")
@@ -128,8 +128,9 @@ as.matrix(movie_similarity)
 image(as.matrix(movie_similarity), main = "Movies similarity")
 ```
 
-#Further Data Exploration 
-#now I extract the most unique ratings 
+Further Data Exploration 
+
+Now, I extract the most unique ratings 
 ```{r rate_values, warning=FALSE, error=FALSE}
 rating_values <- as.vector(ratingMatrix@data)
 unique(rating_values) #extracting unique ratings
@@ -139,11 +140,11 @@ unique(rating_values) #extracting unique ratings
 Table_of_Ratings <- table(rating_values) # what is the count of each rating value
 Table_of_Ratings
 ```
-#from the table we realize that there are 11 unique score values. The lower values mean lower ratings and vice versa.
+From the table we realize that there are 11 unique score values. The lower values mean lower ratings and vice versa.
 
-#Distribution of the ratings
+Distribution of the ratings
 
-#rating = 0 represent a missing value, so I'll remove them from the dataset before visualizing the results
+rating = 0 represent a missing value, so I'll remove them from the dataset before visualizing the results
 ```{r rat_distrib, warning=FALSE, error=FALSE, echo=FALSE}
 
 rating_values <- rating_values[rating_values != 0]
@@ -152,10 +153,11 @@ rating_values <- factor(rating_values)
 qplot(rating_values) + 
   ggtitle("Distribution of the ratings")
 ```
-#we can see that the most common rating is 4. The majority of movies are rated with 3 or higher. 
+We can see that the most common rating is 4. The majority of movies are rated with 3 or higher. 
 
-#now,let's see nuumber of views of the top movies
-#We will first count the number of views in a film and then organize them in a table that would group them in descending order
+Now,let's see nuumber of views of the top movies
+
+We will first count the number of views in a film and then organize them in a table that would group them in descending order
 
 ```{r top_no, warning=FALSE, error=FALSE, echo=FALSE}
 movie_views <- colCounts(ratingMatrix) #count views for each movie
@@ -178,10 +180,11 @@ ggplot(table_views[1:6, ], aes(x = title, y = views)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggtitle("Total views of top movies")
 ```
-#We see that "Pulp Fiction (1994)" is the most viewed movie, exceeding the second-most-viewed "Forrest Gump (1994)" by 14 views.
+We see that "Pulp Fiction (1994)" is the most viewed movie, exceeding the second-most-viewed "Forrest Gump (1994)" by 14 views.
 
-### Distribution of the average movie rating
-#Now I identify the top-rated movies by computing the average rating of each of them.
+Distribution of the average movie rating
+
+Now, I identify the top-rated movies by computing the average rating of each of them.
 ```{r avg_rat, warning=FALSE, error=FALSE, echo=FALSE, message=FALSE}
 average_ratings <- colMeans(ratingMatrix)
 qplot(average_ratings) + 
@@ -193,17 +196,18 @@ qplot(average_ratings_relevant) +
   ggtitle(paste("Distribution of the relevant average ratings"))
 ```
 
-### Heatmap of the rating matrix
-# visualize the matrix of ratings by building a heat map whose colors represent the ratings. Each row of the matrix corresponds to a user, each column to a movie, and each cell to its rating.
+Heatmap of the rating matrix
+
+visualize the matrix of ratings by building a heat map whose colors represent the ratings. Each row of the matrix corresponds to a user, each column to a movie, and each cell to its rating.
 
 ```{r heat_rate, warning=FALSE, error=FALSE, echo=FALSE}
 image(ratingMatrix, main = "Heatmap of the rating matrix") # hard to read-too many dimensions
 image(ratingMatrix[1:20, 1:25], main = "Heatmap of the first 20 rows and 25 columns")
 ```
 
-#Since there are too many users and items, the first chart is hard to read. The second chart is built zooming in on the first rows and columns.
+Since there are too many users and items, the first chart is hard to read. The second chart is built zooming in on the first rows and columns.
 
-# We should selecet the more relevant users and items since some users saw more movies than the others. Therfore, I  visualize only the users who have seen many movies and the movies that have been seen by many users by following these steps:Determine the minimum number of movies per user.Then, determine the minimum number of users per movie.Finally, select the users and movies matching these criteria.
+We should selecet the more relevant users and items since some users saw more movies than the others. Therfore, I visualize only the users who have seen many movies and the movies that have been seen by many users by following these steps:Determine the minimum number of movies per user.Then, determine the minimum number of users per movie.Finally, select the users and movies matching these criteria.
 
 ```{r heat_relev, warning=FALSE, error=FALSE, echo=FALSE}
 min_n_movies <- quantile(rowCounts(ratingMatrix), 0.99)
@@ -217,19 +221,20 @@ image(ratingMatrix[rowCounts(ratingMatrix) > min_n_movies,
 main = "Heatmap of the top users and movies")
 ```
 
-#Data Preparation 
+Data Preparation 
 
-##Select the relevant data
-#In order to select the most relevant data, I define the minimum number of users per rated movie as 50 and the minimum views number per movie as 50:
+Select the relevant data
+
+In order to select the most relevant data, I define the minimum number of users per rated movie as 50 and the minimum views number per movie as 50:
 ```{r rel_data, warning=FALSE, error=FALSE, echo=FALSE}
 
 ratings_movies <- ratingMatrix[rowCounts(ratingMatrix) > 50,
                                colCounts(ratingMatrix) > 50]
 ratings_movies
 ```
-#Such a selection of the most relevant data contains 420 users and 447 movies, compared to previous 668 users and 10325 movies in the total dataset.
+Such a selection of the most relevant data contains 420 users and 447 movies, compared to previous 668 users and 10325 movies in the total dataset.
 
-#Using the same approach as previously, I visualize the top 2 percent of users and movies in the new matrix of the most relevant data:
+Using the same approach as previously, I visualize the top 2 percent of users and movies in the new matrix of the most relevant data:
 ```{r rel_explore, warning=FALSE, error=FALSE, echo=FALSE}
 min_movies <- quantile(rowCounts(ratings_movies), 0.98)
 min_users <- quantile(colCounts(ratings_movies), 0.98)
@@ -242,16 +247,16 @@ qplot(average_ratings_per_user) + stat_bin(binwidth = 0.1) +
   ggtitle("Distribution of the average rating per user")
 ```
 
-#Normalizong data
+Normalizong data
 
-##Having users who give high (or low) ratings to all their movies might bias the results. In order to remove this effect, I normalize the data so that the average rating of each user is 0. As a quick check, I calculate the average rating by users, and it is equal to 0, as expected:
+Having users who give high (or low) ratings to all their movies might bias the results. In order to remove this effect, I normalize the data so that the average rating of each user is 0. As a quick check, I calculate the average rating by users, and it is equal to 0, as expected:
 
 ```{r normal_data, warning=FALSE, error=FALSE}
 ratings_movies_norm <- normalize(ratings_movies)
 sum(rowMeans(ratings_movies_norm) > 0.00001)
 ```
 
-#plot a heatmap that delineates our normalized ratings.
+Plot a heatmap that delineates our normalized ratings.
 
 ```{r viz_normal_data, warning=FALSE, error=FALSE, echo=FALSE}
 image(ratings_movies_norm[rowCounts(ratings_movies_norm) > min_movies,
@@ -259,11 +264,11 @@ image(ratings_movies_norm[rowCounts(ratings_movies_norm) > min_movies,
 main = "Heatmap of the top users and movies")
 
 ```
-##Binarizing data 
+Binarizing data 
 
-#Binarizing the data means that we have two discrete values 1 and 0, which will allow our recommendation systems to work more efficiently. We will define a matrix that will consist of 1 if the rating is above 3 and otherwise it will be 0.
+Binarizing the data means that we have two discrete values 1 and 0, which will allow our recommendation systems to work more efficiently. We will define a matrix that will consist of 1 if the rating is above 3 and otherwise it will be 0.
 
-#I define the matrice and visualize a 5 percent portion of it.
+I define the matrice and visualize a 5 percent portion of it.
 
 ```{r binar_data, warning=FALSE, error=FALSE, echo=FALSE}
 ratings_movies_good <- binarize(ratings_movies, minRating = 3)
@@ -274,8 +279,8 @@ image(ratings_movies_good[rowCounts(ratings_movies) > min_movies_binary,
       main = "Heatmap of the top users and movies")
 ```
 
-##Item-based collaborative Filtering Model 
-#now, we build the filtering system by splitting the dataset into 80% training set and 20% test set
+Item-based collaborative Filtering Model 
+Now, we build the filtering system by splitting the dataset into 80% training set and 20% test set
 
 ```{r train_test_sets, warning=FALSE, message=FALSE, echo=FALSE}
 splitting_data <- sample(x = c(TRUE, FALSE),
@@ -286,7 +291,7 @@ training_data <- ratings_movies[splitting_data, ]
 testing_data <- ratings_movies[!splitting_data, ]
 ```
 
-#now, I build the recommendation model
+Now, I build the recommendation model
 ```{r build_recommenderIBCF, warning=FALSE, message=FALSE, echo=FALSE}
 recommender_models <- recommenderRegistry$get_entries(dataType = "realRatingMatrix")
 recommender_models$IBCF_realRatingMatrix$parameters
@@ -299,7 +304,7 @@ recc_model
 class(recc_model)
 ```
 
-#Exploring the recommendation model
+Exploring the recommendation model
 ```{r explore_IBCF, warning=FALSE, message=FALSE, echo=FALSE}
 model_info <- getModel(recc_model)
 class(model_info$sim) #contains a similiraty matrix
@@ -315,8 +320,7 @@ table(sum_rows)
 sum_cols <- colSums(model_info$sim > 0)
 qplot(sum_cols, fill=I("steelblue"), col=I("red"))+ ggtitle("Distribution of the column count")
 ```
-
-## Applying recommender system on the dataset:
+Applying recommender system on the dataset:
 ```{r apply_IBCF, warning=FALSE, message=FALSE, echo=FALSE}
 n_recommended <- 10 # the number of items to recommend to each user
 recc_predicted <- predict(object = recc_model, 
@@ -336,16 +340,16 @@ for (i in 1:10){
 movies_user_2
 ```
 
-#define a matrix with the recommendations for each user. visualize the recommendations for the first four users
+Define a matrix with the recommendations for each user. visualize the recommendations for the first four users
 ```{r recc_matrix, warning=FALSE, message=FALSE, echo=FALSE}
 recc_matrix <- sapply(recc_predicted@items, 
                       function(x){ as.integer(colnames(ratings_movies)[x]) }) # matrix with the recommendations for each user
 #dim(recc_matrix)
 recc_matrix[,1:4]
 ```
-#the columns represent the first 4 users, and the rows are the *movieId* values of recommended 10 movies
+The columns represent the first 4 users, and the rows are the *movieId* values of recommended 10 movies
 
-#let’s identify the most recommended movies. The following image shows the distribution of the number of items for IBCF:
+Let’s identify the most recommended movies. The following image shows the distribution of the number of items for IBCF:
 
 ```{r most_recom_moviesIBCF, warning=FALSE, message=FALSE, echo=FALSE}
 number_of_items <- factor(table(recc_matrix))
@@ -362,9 +366,10 @@ for (i in 1:4){
 colnames(table_top) <- c("Movie title", "No of items")
 head(table_top)
 ```
-#we can see that most of the movies have been recommended only a few times, and a few movies have been recommended more than 5 times.
+We can see that most of the movies have been recommended only a few times, and a few movies have been recommended more than 5 times.
 
 #Conclusion
-##IBCF recommends items on the basis of the similarity matrix. It’s an eager-learning model, once built, it doesn’t need to access the initial data.In addition, this algorithm is efficient and scalable, so it works well with big rating matrices.
+
+IBCF recommends items on the basis of the similarity matrix. It’s an eager-learning model, once built, it doesn’t need to access the initial data.In addition, this algorithm is efficient and scalable, so it works well with big rating matrices.
 
 
